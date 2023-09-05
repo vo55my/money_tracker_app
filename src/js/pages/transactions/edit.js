@@ -1,7 +1,10 @@
 import CheckUserAuth from '../auth/check-user-auth';
+import Transactions from '../../network/transactions';
 
 const Edit = {
   async init() {
+    CheckUserAuth.checkLoginState();
+
     this._initialUI();
     await this._initialData();
     this._initialListener();
@@ -40,8 +43,9 @@ const Edit = {
 
     try {
       const response = await Transactions.getById(transactionId);
+      const responseRecords = response.data.results;
 
-      this._populateTransactionToForm(response);
+      this._populateTransactionToForm(responseRecords);
     } catch (error) {
       console.error(error);
     }
@@ -70,17 +74,9 @@ const Edit = {
       console.log(formData);
 
       try {
-        if (formData.evidence) {
-          // Delete old evidence
-          Transactions.destroyEvidence(this._userTransaction.evidence);
-
-          const storageResponse = await Transactions.storeEvidence(formData.evidence);
-          formData.evidence = storageResponse.metadata.fullPath;
-        }
-
         const response = await Transactions.update({
-          ...formData,
           id: this._getTransactionId(),
+          ...formData,
         });
         window.alert(`Transaction with id ${this._getTransactionId()} has been edited`);
 
@@ -129,15 +125,6 @@ const Edit = {
     nameInput.value = transactionRecord.name;
     amountInput.value = transactionRecord.amount;
     dateInput.value = transactionRecord.date.slice(0, 16);
-
-    Transactions.getEvidenceURL(transactionRecord.evidence)
-      .then((url) => {
-        evidenceRecord.setAttribute('defaultImage', url);
-        evidenceRecord.setAttribute('defaultImageAlt', transactionRecord.name);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
 
     inputImagePreviewEdit.setAttribute('defaultImage', transactionRecord.evidenceUrl);
     inputImagePreviewEdit.setAttribute('defaultImageAlt', transactionRecord.name);

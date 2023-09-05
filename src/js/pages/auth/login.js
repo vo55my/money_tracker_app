@@ -1,7 +1,12 @@
 import Auth from '../../network/auth';
+import Config from '../../config/config';
+import Utils from '../../utils/utils';
+import CheckUserAuth from './check-user-auth';
 
 const Login = {
   async init() {
+    CheckUserAuth.checkLoginState();
+
     this._initialListener();
   },
 
@@ -32,7 +37,10 @@ const Login = {
           email: formData.email,
           password: formData.password,
         });
+        Utils.setUserToken(Config.USER_TOKEN_KEY, response.data.results.token);
         window.alert('Signed user in detected');
+
+        this._goToDashboardPage();
       } catch (error) {
         console.error(error);
       }
@@ -53,6 +61,10 @@ const Login = {
     const formDataFiltered = Object.values(formData).filter((item) => item === '');
 
     return formDataFiltered.length === 0;
+  },
+
+  _goToDashboardPage() {
+    window.location.href = '/';
   },
 };
 

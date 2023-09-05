@@ -1,7 +1,10 @@
+import CheckUserAuth from '../auth/check-user-auth';
 import Transactions from '../../network/transactions';
 
 const Add = {
   async init() {
+    CheckUserAuth.checkLoginState();
+
     this._initialUI();
     this._initialListener();
   },
@@ -52,11 +55,7 @@ const Add = {
       console.log(formData);
 
       try {
-        const storageResponse = await Transactions.storeEvidence(formData.evidence);
-        const response = await Transactions.store({
-          ...formData,
-          evidence: storageResponse.metadata.fullPath,
-        });
+        const response = await Transactions.store(formData);
         window.alert('New transaction added successfully');
 
         this._goToDashboardPage();

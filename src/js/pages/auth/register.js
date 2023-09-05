@@ -1,7 +1,10 @@
 import Auth from '../../network/auth';
+import CheckUserAuth from './check-user-auth';
 
 const Register = {
   async init() {
+    CheckUserAuth.checkLoginState();
+
     this._initialListener();
   },
 
@@ -29,14 +32,14 @@ const Register = {
 
       try {
         const response = await Auth.register({
+          name: formData.name,
+          username: formData.username,
           email: formData.email,
           password: formData.password,
         });
-
-        await Auth.updateProfile(response.user, {
-          displayName: formData.name,
-        });
         window.alert('Registered a new user');
+
+        this._goToLoginPage();
       } catch (error) {
         console.error(error);
       }
@@ -61,6 +64,10 @@ const Register = {
     const formDataFiltered = Object.values(formData).filter((item) => item === '');
 
     return formDataFiltered.length === 0;
+  },
+
+  _goToLoginPage() {
+    window.location.href = '/auth/login.html';
   },
 };
 
